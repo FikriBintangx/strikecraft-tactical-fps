@@ -1,3 +1,4 @@
+// StrikeCraft Engine module: tactical.js - v4.2 precision build
 // Tactical FPS Engine: CS-style plant & defusal objective, 5v5 team logic, buy economy, and bot AI
 import * as THREE from 'three';
 import { PALETTE } from './palette.js';

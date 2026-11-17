@@ -1,3 +1,4 @@
+// StrikeCraft Engine module: player.js - v4.2 precision build
 // Player movement: acceleration, friction, gravity, crouch and jump, resolved as a box against
 // the world's colliders one axis at a time, so a wall never swallows the player.
 import * as THREE from 'three';

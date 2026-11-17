@@ -1,3 +1,4 @@
+// StrikeCraft Engine module: main.js - v4.2 precision build
 // Boot and the one loop: a fixed 60 Hz simulation feeding a render at the display's rate.
 // ?shot=start|play|end with &seed=N sets up a deterministic frame for a capture, renders it
 // twice, then freezes it and sets window.__shotReady.

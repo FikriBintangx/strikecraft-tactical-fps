@@ -1,3 +1,4 @@
+// StrikeCraft Engine module: weapon.js - v4.2 precision build
 // One hitscan rifle: a view model, a magazine, a reload, and the spread that punishes moving.
 // It owns the numbers; main.js owns the ray and the damage.
 import * as THREE from 'three';

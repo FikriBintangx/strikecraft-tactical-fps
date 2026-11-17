@@ -1,3 +1,4 @@
+// StrikeCraft Engine module: targets.js - v4.2 precision build
 // Four target dummies: a post, a torso and a head. A head shot kills outright, three torso
 // shots do. A downed dummy falls over, then stands back up four seconds later.
 import * as THREE from 'three';
