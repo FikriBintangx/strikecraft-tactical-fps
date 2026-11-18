@@ -3,188 +3,1306 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>StrikeCraft Tactical FPS: 5v5 Round-Based Defusal Shooter</title>
+<title>YukiStrike: Zero — 3D Cel-Shaded 5v5 Anime Snow Tactical FPS</title>
 <style>
   :root {
-    --canvas: #12151a;
-    --surface: #1a1e26;
-    --hairline: #28303d;
-    --ink: #f0ede6;
-    --muted: #8b96a5;
-    --accent: #f0a830;
-    --ct-color: #4a90e2;
-    --t-color: #e2574a;
-    --font-ui: system-ui, -apple-system, sans-serif;
-    --font-readout: ui-monospace, 'SF Mono', Menlo, monospace;
+    --bg-deep: #070b14;
+    --panel: rgba(9, 14, 26, 0.88);
+    --panel-soft: rgba(14, 22, 40, 0.78);
+    --line: rgba(148, 197, 255, 0.22);
+    --line-bright: rgba(0, 229, 255, 0.55);
+    --ink: #f8fbff;
+    --muted: #9db4d0;
+    --cyan: #00e5ff;
+    --sakura: #ff5c8a;
+    --crimson: #ff3b5c;
+    --gold: #fbbf24;
+    --emerald: #34d399;
+    --font-ui: 'Hiragino Kaku Gothic ProN', 'Yu Gothic UI', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   }
+
   * { box-sizing: border-box; }
+
   html, body {
     margin: 0;
+    width: 100%;
     height: 100%;
     overflow: hidden;
-    background: var(--canvas);
+    background: var(--bg-deep);
     color: var(--ink);
     font-family: var(--font-ui);
+    user-select: none;
   }
-  #game, #game canvas { position: fixed; inset: 0; display: block; }
-  #hud { position: fixed; inset: 0; pointer-events: none; }
 
-  /* TOP MATCH HEADER */
-  #match-bar {
+  #game, #game canvas {
     position: fixed;
-    top: 20px;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  #yukistrike-ui {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  [hidden] { display: none !important; }
+
+  /* ================= COMBAT HUD ================= */
+  .combat-hud {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* Top Match Scoreboard Bar */
+  .match-header {
+    position: fixed;
+    top: 12px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 20px;
-    background: rgba(26, 30, 38, 0.85);
-    border: 1px solid var(--hairline);
-    padding: 8px 24px;
-    border-radius: 6px;
-    backdrop-filter: blur(8px);
-    font-family: var(--font-readout);
+    gap: 5px;
+    z-index: 20;
   }
-  #team-score { font-size: 18px; font-weight: 700; letter-spacing: 0.05em; }
-  #round-timer { font-size: 20px; font-weight: 700; color: var(--accent); }
 
-  /* CROSSHAIR & HITMARKER */
-  #crosshair { position: fixed; left: 50%; top: 50%; width: 22px; height: 22px; transform: translate(-50%, -50%); }
-  #crosshair i { position: absolute; background: var(--ink); opacity: .85; }
-  #crosshair i:nth-child(1) { left: 10px; top: 0; width: 2px; height: 7px; }
-  #crosshair i:nth-child(2) { left: 10px; bottom: 0; width: 2px; height: 7px; }
-  #crosshair i:nth-child(3) { top: 10px; left: 0; height: 2px; width: 7px; }
-  #crosshair i:nth-child(4) { top: 10px; right: 0; height: 2px; width: 7px; }
-
-  #hitmarker { position: fixed; left: 50%; top: 50%; width: 26px; height: 26px; transform: translate(-50%, -50%) rotate(45deg); opacity: 0; transition: opacity 90ms linear; }
-  #hitmarker.on { opacity: 1; }
-  #hitmarker i { position: absolute; background: var(--accent); }
-  #hitmarker i:nth-child(1) { left: 12px; top: 0; width: 2px; height: 8px; }
-  #hitmarker i:nth-child(2) { left: 12px; bottom: 0; width: 2px; height: 8px; }
-  #hitmarker i:nth-child(3) { top: 12px; left: 0; height: 2px; width: 8px; }
-  #hitmarker i:nth-child(4) { top: 12px; right: 0; height: 2px; width: 8px; }
-
-  /* BOTTOM READOUTS */
-  #ammo {
-    position: fixed;
-    right: 32px;
-    bottom: 24px;
+  .match-bar {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
-    font-family: var(--font-readout);
-    font-size: 48px;
-    line-height: 1;
-    color: var(--ink);
+    align-items: center;
+    gap: 14px;
+    padding: 7px 18px;
+    background: var(--panel);
+    border: 1px solid var(--line-bright);
+    border-top: 2px solid var(--cyan);
+    border-radius: 6px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), 0 0 18px rgba(0, 229, 255, 0.16);
+    backdrop-filter: blur(10px);
+    font-family: var(--font-mono);
+    white-space: nowrap;
   }
-  #ammo-reserve { font-size: 16px; color: var(--muted); }
 
-  #economy-hud {
+  .team-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+  }
+
+  .team-ronin { color: var(--crimson); }
+  .team-sakura { color: var(--cyan); }
+
+  .team-score-num {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--ink);
+    min-width: 18px;
+    text-align: center;
+  }
+
+  .pips {
+    letter-spacing: 1px;
+    font-size: 12px;
+  }
+
+  .round-pill {
+    padding: 4px 12px;
+    border-radius: 4px;
+    background: rgba(251, 191, 36, 0.14);
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .objective-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 12px;
+    background: rgba(7, 11, 20, 0.86);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  .badge-win {
+    color: var(--emerald);
+    font-weight: 800;
+  }
+
+  .badge-lose {
+    color: var(--sakura);
+    font-weight: 800;
+  }
+
+  .sep-dot { color: var(--muted); opacity: 0.6; }
+
+  /* Planted & Defusal Banners (Shot 3 / Live Plant) */
+  .planted-banner {
     position: fixed;
-    left: 32px;
-    bottom: 24px;
-    font-family: var(--font-readout);
+    top: 84px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 20px;
+    background: linear-gradient(90deg, rgba(255, 59, 92, 0.92), rgba(190, 24, 93, 0.92));
+    border: 1px solid #fda4af;
+    border-radius: 5px;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    box-shadow: 0 0 24px rgba(255, 59, 92, 0.55);
+    z-index: 25;
+    white-space: nowrap;
+  }
+
+  .defusal-bar {
+    position: fixed;
+    top: 122px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 460px;
+    padding: 8px 14px;
+    background: rgba(7, 13, 28, 0.94);
+    border: 1.5px solid var(--cyan);
+    border-radius: 6px;
+    box-shadow: 0 0 22px rgba(0, 229, 255, 0.35);
+    z-index: 25;
+  }
+
+  .defusal-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--cyan);
+    letter-spacing: 0.06em;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .defusal-track {
+    height: 9px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .defusal-fill {
+    height: 100%;
+    width: 68%;
+    background: linear-gradient(90deg, var(--cyan), var(--sakura));
+    box-shadow: 0 0 12px var(--cyan);
+  }
+
+  /* Top-Left Minimap + Location & Radio */
+  .radar-cluster {
+    position: fixed;
+    top: 12px;
+    left: 14px;
+    width: 214px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 20;
+  }
+
+  .minimap-frame {
+    position: relative;
+    width: 194px;
+    padding: 6px;
+    background: var(--panel);
+    border: 1px solid var(--line-bright);
+    border-left: 3px solid var(--cyan);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .minimap-canvas {
+    display: block;
+    width: 180px;
+    height: 180px;
+    border-radius: 4px;
+    background: #091322;
+  }
+
+  .location-banner {
+    padding: 5px 9px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--gold);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 800;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+  }
+
+  .radio-feed {
     display: flex;
     flex-direction: column;
     gap: 4px;
   }
-  #player-money { font-size: 28px; font-weight: 700; color: #2ecc71; }
-  #score { font-size: 13px; color: var(--muted); }
 
-  .overlay {
+  .radio-pill {
+    padding: 5px 8px;
+    background: rgba(9, 15, 29, 0.88);
+    border: 1px solid rgba(0, 229, 255, 0.28);
+    border-radius: 4px;
+    font-size: 10.5px;
+    line-height: 1.3;
+    color: var(--ink);
+  }
+
+  .radio-tag {
+    color: var(--cyan);
+    font-family: var(--font-mono);
+    font-weight: 800;
+  }
+
+  /* Top-Right Killfeed + Score/Combo Box */
+  .killfeed-cluster {
+    position: fixed;
+    top: 12px;
+    right: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    z-index: 20;
+  }
+
+  .killfeed-list {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  .kill-row {
+    padding: 5px 11px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-right: 3px solid var(--sakura);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  }
+
+  .kill-you { color: var(--cyan); font-weight: 900; }
+  .kill-ally { color: #7dd3fc; font-weight: 800; }
+  .kill-weap { color: var(--muted); font-size: 10.5px; }
+  .kill-hs {
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: rgba(255, 59, 92, 0.24);
+    border: 1px solid var(--crimson);
+    color: #fda4af;
+    font-size: 10px;
+    font-weight: 900;
+  }
+  .kill-victim { color: #fda4af; font-weight: 800; }
+  .kill-yen { color: var(--gold); font-weight: 800; }
+
+  .combo-box {
+    padding: 6px 12px;
+    background: rgba(9, 14, 26, 0.9);
+    border: 1px solid rgba(251, 191, 36, 0.45);
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+
+  .combo-box b { color: var(--gold); }
+
+  /* Center Crosshair, Hitmarker & Headshot Callout */
+  .crosshair {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 28px;
+    height: 28px;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+  }
+
+  .crosshair i {
+    position: absolute;
+    background: var(--cyan);
+    box-shadow: 0 0 6px rgba(0, 229, 255, 0.9);
+  }
+
+  .crosshair i:nth-child(1) { left: 13px; top: 0; width: 2px; height: 8px; }
+  .crosshair i:nth-child(2) { left: 13px; bottom: 0; width: 2px; height: 8px; }
+  .crosshair i:nth-child(3) { top: 13px; left: 0; height: 2px; width: 8px; }
+  .crosshair i:nth-child(4) { top: 13px; right: 0; height: 2px; width: 8px; }
+  .crosshair i:nth-child(5) { left: 12px; top: 12px; width: 4px; height: 4px; border-radius: 50%; background: var(--sakura); }
+
+  .hitmarker {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 34px;
+    height: 34px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    opacity: 0;
+    transition: opacity 80ms linear;
+    z-index: 16;
+  }
+
+  .hitmarker.on { opacity: 1; }
+  .hitmarker i { position: absolute; background: var(--gold); box-shadow: 0 0 8px var(--crimson); }
+  .hitmarker i:nth-child(1) { left: 16px; top: 0; width: 2px; height: 10px; }
+  .hitmarker i:nth-child(2) { left: 16px; bottom: 0; width: 2px; height: 10px; }
+  .hitmarker i:nth-child(3) { top: 16px; left: 0; height: 2px; width: 10px; }
+  .hitmarker i:nth-child(4) { top: 16px; right: 0; height: 2px; width: 10px; }
+
+  .headshot-callout {
+    position: fixed;
+    left: calc(50% + 36px);
+    top: calc(50% - 34px);
+    padding: 6px 14px;
+    background: linear-gradient(90deg, rgba(255, 59, 92, 0.94), rgba(15, 23, 42, 0.92));
+    border: 1.5px solid var(--gold);
+    border-radius: 5px;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    box-shadow: 0 0 20px rgba(255, 59, 92, 0.55);
+    z-index: 17;
+    white-space: nowrap;
+  }
+
+  /* Bottom-Left Vital Readouts */
+  .vitals-panel {
+    position: fixed;
+    bottom: 14px;
+    left: 14px;
+    width: 248px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line-bright);
+    border-left: 3px solid var(--cyan);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    z-index: 20;
+  }
+
+  .vital-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .vital-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  .vital-num {
+    font-family: var(--font-mono);
+    font-size: 44px;
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+  }
+
+  .vital-hp { color: var(--cyan); text-shadow: 0 0 14px rgba(0, 229, 255, 0.35); }
+  .vital-shield { color: var(--sakura); text-shadow: 0 0 14px rgba(255, 92, 138, 0.35); }
+
+  .vital-bar-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .vital-bar-hp {
+    height: 100%;
+    width: 82%;
+    background: linear-gradient(90deg, #0284c7, var(--cyan));
+  }
+
+  .vital-bar-shield {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #db2777, var(--sakura));
+  }
+
+  .cash-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 4px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--gold);
+  }
+
+  /* Bottom-Right Weapon & Loadout Slots */
+  .weapon-panel {
+    position: fixed;
+    bottom: 48px;
+    right: 14px;
+    width: 346px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--line-bright);
+    border-right: 3px solid var(--sakura);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 20;
+  }
+
+  .weapon-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .weapon-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 900;
+    color: var(--sakura);
+    letter-spacing: 0.06em;
+  }
+
+  .ammo-readout {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    font-family: var(--font-mono);
+  }
+
+  .ammo-mag {
+    font-size: 44px;
+    font-weight: 900;
+    line-height: 0.9;
+    color: var(--ink);
+  }
+
+  .ammo-reserve {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .slot-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .slot-chip {
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .slot-chip.active {
+    background: rgba(0, 229, 255, 0.16);
+    border-color: var(--cyan);
+    color: var(--ink);
+  }
+
+  .slot-chip.ability-ready {
+    background: rgba(0, 229, 255, 0.2);
+    border-color: var(--cyan);
+    color: var(--cyan);
+    font-weight: 900;
+  }
+
+  /* Bottom-Center Controls Bar */
+  .controls-bar {
+    position: fixed;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    background: rgba(7, 11, 20, 0.88);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    z-index: 20;
+  }
+
+  .controls-bar b { color: var(--ink); }
+
+  /* ================= MODE 2: TITLE & WORKSHOP OVERLAY ================= */
+  .title-overlay {
     position: fixed;
     inset: 0;
     display: grid;
-    place-items: center;
-    padding: 24px;
-    background: color-mix(in srgb, var(--canvas) 88%, transparent);
+    grid-template-columns: 615px 1fr;
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(90deg, rgba(6, 10, 20, 0.94) 0%, rgba(6, 10, 20, 0.72) 52%, rgba(6, 10, 20, 0.12) 100%);
+    pointer-events: auto;
+    z-index: 40;
   }
-  .overlay[hidden] { display: none; }
-  .panel {
-    width: min(460px, 100%);
-    padding: 32px;
-    background: var(--surface);
-    border: 1px solid var(--hairline);
-    border-radius: 8px;
-  }
-  .panel h1 { margin: 0 0 8px; font-size: 28px; font-weight: 700; }
-  .panel p { margin: 0 0 24px; font-size: 15px; line-height: 1.5; color: var(--muted); }
-  #play {
-    font: inherit;
-    font-weight: 600;
-    padding: 12px 20px;
-    border: 1px solid var(--accent);
-    border-radius: 6px;
-    background: var(--accent);
-    color: var(--canvas);
-    cursor: pointer;
-    transition: background-color 120ms ease;
-  }
-  #play:hover { background: var(--ink); border-color: var(--ink); }
 
-  .keys {
-    margin: 20px 0 0;
-    padding: 0;
-    list-style: none;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+  .title-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 22px;
+    background: rgba(9, 14, 27, 0.92);
+    border: 1px solid var(--line-bright);
+    border-left: 4px solid var(--gold);
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+  }
+
+  .game-title {
+    margin: 0;
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 0.96;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    text-shadow: 0 4px 0 rgba(251, 191, 36, 0.35), 0 0 28px rgba(251, 191, 36, 0.28);
+  }
+
+  .game-title span { color: var(--gold); }
+
+  .game-subtitle {
+    margin: 6px 0 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+  }
+
+  .briefing-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+
+  .brief-row {
+    display: flex;
+    align-items: center;
     gap: 8px;
-    font-size: 13px;
+    padding: 5px 9px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--line);
+    font-size: 11.5px;
+    line-height: 1.3;
+  }
+
+  .brief-tag {
+    min-width: 44px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 900;
+  }
+
+  .tag-goal { background: rgba(0, 229, 255, 0.2); color: var(--cyan); border: 1px solid var(--cyan); }
+  .tag-win { background: rgba(52, 211, 153, 0.2); color: var(--emerald); border: 1px solid var(--emerald); }
+  .tag-lose { background: rgba(255, 92, 138, 0.2); color: var(--sakura); border: 1px solid var(--sakura); }
+
+  .section-kicker {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .difficulty-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 7px;
+    margin-bottom: 12px;
+  }
+
+  .diff-btn {
+    padding: 7px 8px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    font-weight: 800;
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .diff-btn.selected {
+    background: rgba(251, 191, 36, 0.18);
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 14px rgba(251, 191, 36, 0.22);
+  }
+
+  .play-cta {
+    width: 100%;
+    padding: 13px 18px;
+    border: 2px solid var(--gold);
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--gold), #ff6b9d);
+    color: #090d16;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    cursor: pointer;
+    box-shadow: 0 0 26px rgba(251, 191, 36, 0.45);
+    margin-bottom: 12px;
+  }
+
+  .workshop-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .relic-card {
+    padding: 6px 7px;
+    border-radius: 5px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .relic-card.owned { border-color: rgba(0, 229, 255, 0.45); }
+  .relic-card.buyable { border-color: rgba(251, 191, 36, 0.65); cursor: pointer; }
+
+  .relic-name {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: var(--ink);
+  }
+
+  .relic-state {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 900;
+    color: var(--cyan);
+  }
+
+  .relic-card.buyable .relic-state { color: var(--gold); }
+
+  .title-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 4px 0;
+  }
+
+  .viewport-tag {
+    padding: 7px 14px;
+    background: rgba(7, 11, 20, 0.82);
+    border: 1px solid var(--line-bright);
+    border-radius: 5px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--cyan);
+    letter-spacing: 0.08em;
+  }
+
+  .loop-cards {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .loop-card {
+    padding: 11px 13px;
+    background: rgba(8, 13, 25, 0.88);
+    border: 1px solid var(--line-bright);
+    border-top: 3px solid var(--sakura);
+    border-radius: 6px;
+    backdrop-filter: blur(8px);
+  }
+
+  .loop-step {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .loop-desc {
+    font-size: 11.5px;
+    line-height: 1.35;
     color: var(--muted);
   }
-  .keys li { display: flex; align-items: center; gap: 8px; }
-  .keys kbd {
-    min-width: 22px;
-    padding: 2px 6px;
-    border: 1px solid var(--hairline);
-    border-radius: 4px;
-    font-family: var(--font-readout);
+
+  /* ================= MODE 3: 5-COLUMN SHINTO ARMOURY ================= */
+  .armoury-overlay {
+    position: fixed;
+    left: 50%;
+    top: 51%;
+    transform: translate(-50%, -50%);
+    width: 816px;
+    max-width: calc(100vw - 40px);
+    padding: 12px 14px;
+    background: rgba(7, 12, 24, 0.95);
+    border: 1.5px solid var(--line-bright);
+    border-top: 3px solid var(--gold);
+    border-radius: 8px;
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.82), 0 0 28px rgba(0, 229, 255, 0.14);
+    backdrop-filter: blur(12px);
+    pointer-events: auto;
+    z-index: 35;
+  }
+
+  .armoury-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    margin-bottom: 9px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-mono);
+  }
+
+  .armoury-title {
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+  }
+
+  .armoury-meta {
     font-size: 11px;
-    color: var(--ink);
+    font-weight: 800;
+    color: var(--cyan);
+  }
+
+  .armoury-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .armoury-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .armoury-col-head {
+    padding: 4px 7px;
+    background: rgba(0, 229, 255, 0.12);
+    border-left: 3px solid var(--cyan);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 900;
+    color: var(--cyan);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .armoury-item {
+    padding: 7px 8px;
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+    transition: border-color 120ms ease, transform 120ms ease;
+  }
+
+  .armoury-item:hover {
+    border-color: var(--cyan);
+    transform: translateY(-1px);
+  }
+
+  .armoury-item.equipped {
+    border-color: var(--gold);
+    background: rgba(251, 191, 36, 0.12);
+  }
+
+  .armoury-item.owned {
+    border-color: rgba(0, 229, 255, 0.45);
+  }
+
+  .item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px;
+    font-size: 10.5px;
+    font-weight: 800;
+  }
+
+  .item-price {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--gold);
+  }
+
+  .item-stats {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--muted);
+  }
+
+  .item-badge {
+    align-self: flex-start;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    font-weight: 900;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--muted);
+  }
+
+  .armoury-item.equipped .item-badge {
+    background: rgba(251, 191, 36, 0.24);
+    color: var(--gold);
+  }
+
+  .armoury-item.owned .item-badge {
+    background: rgba(0, 229, 255, 0.2);
+    color: var(--cyan);
+  }
+
+  /* ================= MODE 4: S-RANK VICTORY & SCOREBOARD ================= */
+  .victory-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 22px 26px;
+    background: linear-gradient(180deg, rgba(6, 10, 20, 0.62) 0%, rgba(6, 10, 20, 0.45) 50%, rgba(6, 10, 20, 0.72) 100%);
+    pointer-events: auto;
+    z-index: 45;
+  }
+
+  .victory-top {
     text-align: center;
+  }
+
+  .victory-title {
+    margin: 0;
+    font-size: 62px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: var(--gold);
+    text-shadow: 0 4px 28px rgba(251, 191, 36, 0.45);
+  }
+
+  .victory-sub {
+    margin: 6px 0 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+  }
+
+  .victory-grid {
+    display: grid;
+    grid-template-columns: 205px 1fr 285px;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .rank-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(12, 18, 34, 0.92);
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    box-shadow: 0 0 36px rgba(251, 191, 36, 0.28);
+    text-align: center;
+  }
+
+  .rank-letter {
+    font-size: 112px;
+    font-weight: 900;
+    line-height: 0.95;
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(251, 191, 36, 0.65);
+  }
+
+  .rank-label {
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+  }
+
+  .rank-meta {
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--cyan);
+    line-height: 1.4;
+  }
+
+  .scoreboard-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    background: rgba(10, 16, 30, 0.92);
+    border: 1px solid var(--line-bright);
+    border-radius: 8px;
+  }
+
+  .sb-team-head {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+  }
+
+  .sb-sakura { background: rgba(0, 229, 255, 0.16); color: var(--cyan); border-left: 3px solid var(--cyan); }
+  .sb-ronin { background: rgba(255, 59, 92, 0.16); color: var(--crimson); border-left: 3px solid var(--crimson); }
+
+  .sb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+
+  .sb-table th {
+    text-align: left;
+    padding: 4px 8px;
+    color: var(--muted);
+    font-size: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sb-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid rgba(148, 197, 255, 0.08);
+    color: var(--ink);
+  }
+
+  .sb-table tr.mvp-row td { color: var(--gold); font-weight: 900; }
+
+  .feats-box {
+    padding: 14px 16px;
+    background: rgba(10, 16, 30, 0.92);
+    border: 1px solid rgba(52, 211, 153, 0.45);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .feats-head {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 900;
+    color: var(--emerald);
+    letter-spacing: 0.08em;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .feat-item {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .feat-check {
+    color: var(--emerald);
+    font-family: var(--font-mono);
+    font-weight: 900;
+  }
+
+  .victory-actions {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .btn-victory-primary {
+    padding: 13px 28px;
+    border-radius: 6px;
+    border: 2px solid var(--gold);
+    background: linear-gradient(90deg, var(--gold), #ff6b9d);
+    color: #090d16;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.45);
+  }
+
+  .btn-victory-secondary {
+    padding: 13px 24px;
+    border-radius: 6px;
+    border: 1.5px solid var(--cyan);
+    background: rgba(0, 229, 255, 0.12);
+    color: var(--cyan);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    cursor: pointer;
   }
 </style>
 </head>
 <body>
 <div id="game"></div>
 
-<div id="hud" aria-hidden="true">
-  <div id="match-bar">
-    <span id="team-score">CT 0 : 0 T</span>
-    <span id="round-timer">1:55</span>
-  </div>
-  <div id="crosshair"><i></i><i></i><i></i><i></i></div>
-  <div id="hitmarker"><i></i><i></i><i></i><i></i></div>
-  <div id="economy-hud">
-    <div id="player-money">$800</div>
-    <div id="score">Combat Points <b id="score-value">0</b></div>
-  </div>
-  <div id="ammo"><span id="ammo-mag">30</span><span id="ammo-reserve">/ 90</span></div>
-</div>
+<main id="yukistrike-ui" data-game="YukiStrike: Zero — 3D Cel-Shaded 5v5 Anime Snow Tactical FPS">
+  <!-- ALWAYS-ON COMBAT HUD (Live, ?shot=1, ?shot=3) -->
+  <section class="combat-hud" data-ui="combat-hud">
+    <header class="match-header" data-ui="match-bar">
+      <div class="match-bar">
+        <div class="team-block">
+          <span class="team-ronin">CRIMSON RONIN</span>
+          <span class="pips team-ronin" data-ui="ronin-pips">[■■--]</span>
+          <span class="team-score-num" data-ui="ronin-score">2</span>
+        </div>
+        <div class="round-pill" data-ui="round-timer">LIVE 1:18 · ROUND 7 OF 15</div>
+        <div class="team-block">
+          <span class="team-score-num" data-ui="sakura-score">4</span>
+          <span class="pips team-sakura" data-ui="sakura-pips">[■■■■]</span>
+          <span class="team-sakura">SAKURA GUARD</span>
+        </div>
+      </div>
+      <div class="objective-strip" data-ui="objective-strip">
+        <span class="badge-win">[WIN] Eliminate Crimson Ronin or defuse Spirit Charge at Site A/B</span>
+        <span class="sep-dot">·</span>
+        <span class="badge-lose">[LOSE] Charge detonates or squad wiped</span>
+      </div>
+    </header>
 
-<div id="overlay" class="overlay">
-  <section class="panel" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
-    <h1 id="overlay-title">StrikeCraft Tactical FPS v4</h1>
-    <p id="overlay-copy">Round-Based Tactical Shooter. Plant or Defuse C4 Bomb at Site A / B.</p>
-    <button id="play" type="button">Enter Combat (Buy Phase)</button>
-    <ul class="keys">
-      <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Movement</li>
-      <li><kbd>Mouse</kbd> Precision Aim</li>
-      <li><kbd>L-Click</kbd> Firing</li>
-      <li><kbd>R</kbd> Magazine Reload</li>
-      <li><kbd>B</kbd> Economy Buy Menu</li>
-      <li><kbd>E</kbd> Plant / Defuse C4</li>
-    </ul>
+    <div class="planted-banner" data-ui="planted-banner" hidden>⚠ PLANTED · SITE A TORII ALTAR — 0:19 REMAINING</div>
+    <div class="defusal-bar" data-ui="defusal-bar" hidden>
+      <div class="defusal-label" data-ui="defusal-label">DEFUSING SPIRIT CHARGE WITH KIT — 68% [2.4s]</div>
+      <div class="defusal-track"><div class="defusal-fill" data-ui="defusal-fill"></div></div>
+    </div>
+
+    <aside class="radar-cluster" data-ui="radar-cluster">
+      <div class="minimap-frame">
+        <canvas class="minimap-canvas" data-ui="minimap" width="180" height="180"></canvas>
+      </div>
+      <div class="location-banner" data-ui="location-banner">SHRINE COURTYARD · TORII LANE</div>
+      <div class="radio-feed" data-ui="radio-feed">
+        <div class="radio-pill"><span class="radio-tag">[RADIO] Yuki:</span> Two Ronin pushing Torii Arch!</div>
+        <div class="radio-pill"><span class="radio-tag">[RADIO] Hana:</span> Holding Pagoda B, Spirit Shield ready.</div>
+      </div>
+    </aside>
+
+    <aside class="killfeed-cluster" data-ui="killfeed-cluster">
+      <div class="killfeed-list" data-ui="killfeed-list">
+        <div class="kill-row">
+          <span class="kill-you">You</span>
+          <span class="kill-weap">[Kitsune Type-89]</span>
+          <span class="kill-hs">[HS]</span>
+          <span class="kill-victim">Akagi</span>
+          <span class="kill-yen">(+¥300)</span>
+        </div>
+        <div class="kill-row">
+          <span class="kill-ally">Yuki</span>
+          <span class="kill-weap">[Yuki-9 SMG]</span>
+          <span class="kill-victim">Raiden</span>
+        </div>
+      </div>
+      <div class="combo-box" data-ui="combo-box">MATCH PTS: <b>4,850</b> | STREAK <b>x3</b> | RELICS: <b>3/8</b></div>
+    </aside>
+
+    <div class="crosshair" data-ui="crosshair"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="hitmarker" data-ui="hitmarker"><i></i><i></i><i></i><i></i></div>
+    <div class="headshot-callout" data-ui="headshot-callout" hidden>★ HEADSHOT! -112 [BROKEN SHIELD]</div>
+
+    <section class="vitals-panel" data-ui="vitals">
+      <div class="vital-row">
+        <span class="vital-label">HEALTH</span>
+        <span class="vital-num vital-hp" data-ui="health-val">82</span>
+      </div>
+      <div class="vital-bar-track"><div class="vital-bar-hp" data-ui="health-bar"></div></div>
+      <div class="vital-row">
+        <span class="vital-label">SHIELD</span>
+        <span class="vital-num vital-shield" data-ui="shield-val">100</span>
+      </div>
+      <div class="vital-bar-track"><div class="vital-bar-shield" data-ui="shield-bar"></div></div>
+      <div class="cash-row">
+        <span>CASH</span>
+        <span data-ui="cash-val">¥3,850</span>
+      </div>
+    </section>
+
+    <section class="weapon-panel" data-ui="weapon-hud">
+      <div class="weapon-top">
+        <span class="weapon-name" data-ui="weapon-name">KITSUNE TYPE-89 RIFLE</span>
+        <div class="ammo-readout">
+          <span class="ammo-mag" data-ui="ammo-mag">24</span>
+          <span class="ammo-reserve" data-ui="ammo-reserve">/ 90</span>
+        </div>
+      </div>
+      <div class="slot-strip" data-ui="slot-strip">
+        <span class="slot-chip active" data-slot="1">[1] Type-89 Rifle</span>
+        <span class="slot-chip" data-slot="2">[2] Wakizashi Pistol</span>
+        <span class="slot-chip" data-slot="3">[3] Katana</span>
+        <span class="slot-chip" data-slot="4">[4] Frost Smoke</span>
+        <span class="slot-chip ability-ready" data-slot="q">[Q] Frost Step READY</span>
+      </div>
+    </section>
+
+    <footer class="controls-bar" data-ui="controls-bar">
+      <b>[WASD]</b> MOVE &nbsp; <b>[LMB]</b> FIRE &nbsp; <b>[RMB]</b> FOCUS &nbsp; <b>[B]</b> ARMOURY &nbsp; <b>[E]</b> DEFUSE &nbsp; <b>[Q]</b> FROST STEP &nbsp; <b>[R]</b> RELOAD &nbsp; <b>[M]</b> AUDIO
+    </footer>
   </section>
-</div>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "./vendor/three/three.module.min.js"
-  }
-}
-</script>
+  <!-- MODE 2: TITLE, MISSION BRIEFING, DIFFICULTY & RELIC WORKSHOP -->
+  <section class="title-overlay" data-ui="title-overlay" hidden>
+    <div class="title-left">
+      <div>
+        <h1 class="game-title">YUKISTRIKE: <span>ZERO</span></h1>
+        <div class="game-subtitle">雪のストライク · 5v5 ANIME SNOW TACTICAL FPS · 3 REALMS · 10 WEAPONS · 8 RELICS</div>
+        <div class="briefing-rows">
+          <div class="brief-row"><span class="brief-tag tag-goal">GOAL</span><span>Hold Shrine Courtyard, out-aim Crimson Ronin, and control Site A / B Spirit Altars.</span></div>
+          <div class="brief-row"><span class="brief-tag tag-win">WIN</span><span>Eliminate Crimson Ronin or defuse Spirit Charge at Site A Torii Altar / Site B Pagoda.</span></div>
+          <div class="brief-row"><span class="brief-tag tag-lose">LOSE</span><span>Spirit Charge detonates or Sakura Guard squad is eliminated.</span></div>
+        </div>
+        <div class="section-kicker">DIFFICULTY [1-3]</div>
+        <div class="difficulty-row" data-ui="difficulty-row">
+          <button type="button" class="diff-btn" data-diff="genin">GENIN (x0.8)</button>
+          <button type="button" class="diff-btn selected" data-diff="chunin">CHUNIN (x1.0 SELECTED)</button>
+          <button type="button" class="diff-btn" data-diff="shogun">SHOGUN (x1.5 + ONI BOSS)</button>
+        </div>
+        <button type="button" class="play-cta" data-ui="play-btn">▶ PLAY MATCH [ENTER or CLICK]</button>
+      </div>
+      <div>
+        <div class="section-kicker">SHINTO WORKSHOP — 8 RELIC UNLOCKS</div>
+        <div class="workshop-grid" data-ui="workshop-grid"></div>
+      </div>
+    </div>
+    <div class="title-right">
+      <div class="viewport-tag">LIVE 3D REALM · SHINTO SNOW SHRINE · CEL-SHADED</div>
+      <div class="loop-cards">
+        <div class="loop-card">
+          <div class="loop-step">1. ARMOURY &amp; PLAN</div>
+          <div class="loop-desc">Equip Type-89 Rifle, Spirit Shield &amp; Shinto Relics before breach.</div>
+        </div>
+        <div class="loop-card">
+          <div class="loop-step">2. BREACH &amp; PLANT</div>
+          <div class="loop-desc">Push Torii Lane A or Cryo Pagoda B with Frost Step flanks.</div>
+        </div>
+        <div class="loop-card">
+          <div class="loop-step">3. DEFUSE &amp; WIN</div>
+          <div class="loop-desc">Neutralize Spirit Charge with Kit and secure S-Rank victory.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODE 3: 5-COLUMN SHINTO ARMOURY OVERLAY -->
+  <section class="armoury-overlay" data-ui="armoury-overlay" hidden>
+    <div class="armoury-head">
+      <span class="armoury-title">SHINTO ARMOURY</span>
+      <span class="armoury-meta" data-ui="armoury-meta">[B] CLOSE | CASH ¥3,850 | TEAM PLAN: 2-1-2 TORII SPLIT</span>
+    </div>
+    <div class="armoury-grid" data-ui="armoury-grid"></div>
+  </section>
+
+  <!-- MODE 4: S-RANK VICTORY & 5v5 SCOREBOARD -->
+  <section class="victory-overlay" data-ui="victory-overlay" hidden>
+    <div class="victory-top">
+      <h2 class="victory-title" data-ui="victory-title">VICTORY — SAKURA GUARD WIN 8 : 4</h2>
+      <div class="victory-sub" data-ui="victory-sub">SPIRIT CHARGE DEFUSED AT SITE A · MATCH REWARD +¥3,500</div>
+    </div>
+    <div class="victory-grid">
+      <div class="rank-card">
+        <div class="rank-letter" data-ui="rank-letter">S</div>
+        <div class="rank-label">S-RANK GRADE</div>
+        <div class="rank-meta" data-ui="rank-meta">TACTICAL RATING 98.4%<br>MVP: YOU (SAKURA-01)<br>MATCH PTS: 4,850</div>
+      </div>
+      <div class="scoreboard-box" data-ui="scoreboard-box"></div>
+      <div class="feats-box" data-ui="feats-box"></div>
+    </div>
+    <div class="victory-actions">
+      <button type="button" class="btn-victory-primary" data-ui="play-again-btn">[R / ENTER] PLAY AGAIN</button>
+      <button type="button" class="btn-victory-secondary" data-ui="title-btn">[T] TITLE &amp; DIFFICULTY</button>
+    </div>
+  </section>
+</main>
+
+<script type="importmap">{"imports":{"three":"./vendor/three/three.module.min.js"}}</script>
 <script type="module" src="./src/main.js"></script>
 </body>
 </html>
