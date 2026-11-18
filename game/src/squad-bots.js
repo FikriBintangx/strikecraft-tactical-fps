@@ -228,6 +228,36 @@ export function createArticulatedBotSquad(scene) {
       haoriMat
     );
     hoodCap.position.set(0, 0.87, 0.0);
+    upperBody.add(hoodCap);
+
+    // Supreme Frost Oni Boss custom features (Curved Demon Horns & Ice Spikes)
+    if (entry.name === 'Oni-Boss') {
+      group.scale.set(1.38, 1.38, 1.38);
+      const hornMat = createCelMaterial(0x881337, 0.2, 0.3, 0xff1744, 0.8);
+      const leftHorn = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.44, 8), hornMat);
+      leftHorn.position.set(-0.16, 1.15, -0.04);
+      leftHorn.rotation.set(-0.25, 0.1, -0.42);
+      addCelOutline(leftHorn, 0.035);
+      upperBody.add(leftHorn);
+
+      const rightHorn = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.44, 8), hornMat);
+      rightHorn.position.set(0.16, 1.15, -0.04);
+      rightHorn.rotation.set(-0.25, -0.1, 0.42);
+      addCelOutline(rightHorn, 0.035);
+      upperBody.add(rightHorn);
+
+      // Frost Armor Spikes on Shoulders
+      const iceMat = createCelMaterial(0x0284c7, 0.2, 0.4, 0x00e5ff, 1.2);
+      const leftSpike = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.28, 6), iceMat);
+      leftSpike.position.set(-0.42, 0.68, 0);
+      leftSpike.rotation.z = 0.55;
+      upperBody.add(leftSpike);
+
+      const rightSpike = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.28, 6), iceMat);
+      rightSpike.position.set(0.42, 0.68, 0);
+      rightSpike.rotation.z = -0.55;
+      upperBody.add(rightSpike);
+    }
     hoodCap.rotation.x = -0.18;
     addCelOutline(hoodCap, 0.04);
     upperBody.add(hoodCap);
@@ -372,12 +402,12 @@ export function createArticulatedBotSquad(scene) {
     sparkTimer = 0;
 
     if (mode === '1') {
-      // Combat cover shot: Akagi in center-crosshair mid-lane taking headshot with spark, Kuro flanking right, Yuki left
+      // Combat cover shot: Akagi in center taking headshot, Oni-Boss looming large in right mid-ground, Yuki left flank
       applyPose(findBot('Akagi'), 0.0, 0.0, -5.8, 0.05, { hp: 24, patrolRadius: 0 });
-      applyPose(findBot('Kuro'), 4.6, 0.0, -4.4, -0.52, { hp: 100, patrolRadius: 0.2 });
+      applyPose(findBot('Oni-Boss'), 2.2, 0.0, -8.4, -0.32, { hp: 74, patrolRadius: 0.1 });
+      applyPose(findBot('Kuro'), 4.8, 0.0, -5.2, -0.65, { hp: 100, patrolRadius: 0.2 });
       applyPose(findBot('Raiden'), -5.4, 0.0, -8.5, 0.35, { hp: 100, patrolRadius: 0.2 });
       applyPose(findBot('Kaguya'), 8.8, 0.6, -3.5, -0.9, { hp: 100, patrolRadius: 0.2 });
-      applyPose(findBot('Oni-Boss'), -1.2, 0.0, -13.2, 0.0, { hp: 100, patrolRadius: 0.2 });
 
       applyPose(findBot('Yuki'), -3.2, 0.0, 0.2, -0.35, { hp: 88, patrolRadius: 0.15 });
       applyPose(findBot('Hana'), 3.4, 0.0, 2.2, 0.42, { hp: 100, patrolRadius: 0.15 });

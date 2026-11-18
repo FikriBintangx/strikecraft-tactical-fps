@@ -111,6 +111,7 @@ export function createTacticalHudAndMinimap() {
     crosshair: q('crosshair'),
     hitmarker: q('hitmarker'),
     headshotCallout: q('headshot-callout'),
+    floatingDamage: q('floating-damage'),
     healthVal: q('health-val'),
     healthBar: q('health-bar'),
     shieldVal: q('shield-val'),
@@ -585,6 +586,7 @@ export function createTacticalHudAndMinimap() {
     if (els.plantedBanner) els.plantedBanner.hidden = true;
     if (els.defusalBar) els.defusalBar.hidden = true;
     if (els.headshotCallout) els.headshotCallout.hidden = true;
+    if (els.floatingDamage) els.floatingDamage.hidden = true;
     if (els.hitmarker) els.hitmarker.classList.remove('on');
 
     if (key === '2' || key === 'start' || key === 'title' || key === 'workshop') {
@@ -624,6 +626,7 @@ export function createTacticalHudAndMinimap() {
     if (state.radio) pushRadio(state.radio);
 
     if (key === '1' || key === 'play' || key === 'combat') {
+      if (els.floatingDamage) els.floatingDamage.hidden = false;
       hitMarker(true, 60000, state.hsDamage ?? 112, true);
       updateMinimap(
         state.player ?? { x: 0.4, z: 2.2, yaw: 0.05 },
